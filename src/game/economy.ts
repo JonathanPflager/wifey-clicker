@@ -163,8 +163,8 @@ export function formatNumber(n: number): string {
   if (whole < 1000) return whole.toString();
   if (whole < 1_000_000) return whole.toLocaleString("en-US");
   const units = ["M", "B", "T", "Qa", "Qi", "Sx", "Sp"];
-  let unitIndex = -1;
-  let value = whole;
+  let unitIndex = 0; // whole is already >= 1,000,000, i.e. at least "M"
+  let value = whole / 1_000_000;
   while (value >= 1000 && unitIndex < units.length - 1) {
     value /= 1000;
     unitIndex++;
