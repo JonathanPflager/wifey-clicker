@@ -24,8 +24,11 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1 className="app-title">Wifey Clicker 💖</h1>
-        <CurrencyDisplay />
       </header>
+
+      <div className="currency-bar">
+        <CurrencyDisplay />
+      </div>
 
       {offlineEarned > 0 && (
         <div className="welcome-back" onClick={clearOfflineEarned}>

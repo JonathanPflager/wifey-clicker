@@ -43,18 +43,26 @@ body {
 
 /* ---- Header ---- */
 .app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .app-title {
   font-size: 1.9rem;
   letter-spacing: 0.5px;
   text-shadow: 0 2px 8px var(--shadow);
+}
+
+/* ---- Sticky currency bar ----
+   A normal child of .app (max-width 720px, centered), so it sticks at the
+   same width/position as the rest of the page content, not full-width. */
+.currency-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg);
+  padding: 10px 0 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 16px -12px rgba(0, 0, 0, 0.5);
 }
 
 .currencies {
@@ -78,6 +86,11 @@ body {
 
 .currency-roses {
   background: linear-gradient(135deg, #ffffff, #ffd9e8);
+  min-width: 120px;
+}
+
+.currency-hps {
+  background: linear-gradient(135deg, var(--accent-3), #ffe9a8);
   min-width: 120px;
 }
 

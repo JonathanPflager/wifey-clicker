@@ -5,6 +5,7 @@ import {
   cyclePayout,
   happinessMultiplier,
   boostedCycleSeconds,
+  boostedHappinessPerSecond,
   roseGainForRun,
 } from "./economy";
 
@@ -133,4 +134,20 @@ export function cycleProgress(
   const cycleMs = boostedCycleSeconds(config, itemState.owned, state.roseItems) * 1000;
   const elapsed = now - itemState.cycleStart;
   return Math.max(0, Math.min(1, elapsed / cycleMs));
+}
+
+/**
+ * Current total happiness/sec across every owned item, including speed
+ * milestones, the Golden Kindle rose-shop boost, and the roses-held +1%
+ * bonus — the same math each ItemCard uses per-item, summed.
+ */
+export function totalHappinessPerSecond(state: GameState): number {
+  const mult = happinessMultiplier(state.roses);
+  let total = 0;
+  for (const config of ITEMS) {
+    const owned = state.items[config.id]?.owned ?? 0;
+    if (owned < 1) continue;
+    total += boostedHappinessPerSecond(config, owned, state.roseItems) * mult;
+  }
+  return total;
 }
