@@ -19,7 +19,7 @@ export default function CurrencyDisplay() {
       </div>
       <div className="currency currency-hps">
         <span className="currency-amount">{formatNumber(hps)}/s</span>
-        <span className="currency-label">Happiness/sec ⚡</span>
+        <span className="currency-label">Per Second ⚡</span>
       </div>
     </div>
   );

@@ -67,43 +67,47 @@ body {
 
 .currencies {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: nowrap;
+  justify-content: center;
+  overflow-x: auto;
 }
 
 .currency {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
   color: #3a1226;
-  padding: 8px 18px;
-  border-radius: 16px;
+  padding: 6px 10px;
+  border-radius: 14px;
   box-shadow: 0 6px 18px var(--shadow);
-  min-width: 140px;
+  min-width: 92px;
+  flex-shrink: 0;
 }
 
 .currency-roses {
   background: linear-gradient(135deg, #ffffff, #ffd9e8);
-  min-width: 120px;
+  min-width: 84px;
 }
 
 .currency-hps {
   background: linear-gradient(135deg, var(--accent-3), #ffe9a8);
-  min-width: 120px;
+  min-width: 84px;
 }
 
 .currency-amount {
-  font-size: 1.7rem;
+  font-size: 1.2rem;
   font-weight: 800;
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .currency-label {
-  font-size: 0.75rem;
+  font-size: 0.66rem;
   font-weight: 600;
   opacity: 0.85;
+  white-space: nowrap;
 }
 
 /* ---- Welcome back banner ---- */
