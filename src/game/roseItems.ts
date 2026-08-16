@@ -11,6 +11,8 @@ export interface RoseItemConfig {
   icon: string;
   /** Short effect description, shown per-level (e.g. "+0.5% activity speed"). */
   description: string;
+  /** +1 for a buff (bonus grows), -1 for a debuff (e.g. cost reduction). */
+  sign: 1 | -1;
 }
 
 export const ROSE_ITEMS: RoseItemConfig[] = [
@@ -19,18 +21,21 @@ export const ROSE_ITEMS: RoseItemConfig[] = [
     name: "Golden Kindle",
     icon: "🔥",
     description: "+0.5% activity speed",
+    sign: 1,
   },
   {
     id: "jewelry",
     name: "Diamond Jewelry",
     icon: "💎",
     description: "+0.5% more roses",
+    sign: 1,
   },
   {
     id: "penguin",
     name: "Pet Penguin",
     icon: "🐧",
     description: "-0.5% item cost",
+    sign: -1,
   },
 ];
 

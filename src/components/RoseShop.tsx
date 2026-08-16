@@ -21,7 +21,8 @@ export default function RoseShop() {
           const locked = level === 0;
           const cost = roseItemCost(config.id, roseItems);
           const canAfford = roses >= cost;
-          const totalBonus = (level * ROSE_ITEM_BONUS * 100).toFixed(1);
+          const signedBonus = level * ROSE_ITEM_BONUS * 100 * config.sign;
+          const totalBonus = `${signedBonus >= 0 ? "+" : ""}${signedBonus.toFixed(1)}`;
 
           return (
             <div key={config.id} className={`rose-item ${locked ? "rose-item-locked" : ""}`}>
@@ -35,7 +36,7 @@ export default function RoseShop() {
                 </div>
                 <div className="rose-item-desc">
                   {config.description}
-                  {!locked && <> — currently +{totalBonus}%</>}
+                  {!locked && <> — currently {totalBonus}%</>}
                 </div>
               </div>
               <button
