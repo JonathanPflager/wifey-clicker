@@ -1,7 +1,13 @@
-import type { GameState } from "./types";
+import type { GameState, GameStats } from "./types";
 import { ITEMS } from "./items";
 import { ROSE_ITEMS } from "./roseItems";
-import { advanceGame, createNewGame, SAVE_VERSION } from "./engine";
+import {
+  advanceGame,
+  createNewGame,
+  defaultStats,
+  totalHappinessPerSecond,
+  SAVE_VERSION,
+} from "./engine";
 
 const SAVE_KEY = "wifey-clicker-save-v1";
 
@@ -32,7 +38,16 @@ export function loadGame(now: number = Date.now()): {
   const sanitized = sanitize(parsed, now);
   // Offline catch-up: advance from the saved moment to now.
   const { state, earned } = advanceGame(sanitized, now);
-  return { state, offlineEarned: earned };
+  // Seed bestHps on load so a migrated save isn't stuck at 0 until the next
+  // purchase (bestHps is otherwise only updated on buy/prestige actions).
+  const hps = totalHappinessPerSecond(state);
+  return {
+    state:
+      hps > state.stats.bestHps
+        ? { ...state, stats: { ...state.stats, bestHps: hps } }
+        : state,
+    offlineEarned: earned,
+  };
 }
 
 /** Persist the game, stamping savedAt so the next load can compute offline time. */
@@ -78,6 +93,12 @@ function sanitize(parsed: Partial<GameState>, now: number): GameState {
       }
     }
   }
+  const runHappiness =
+    typeof parsed.runHappiness === "number" && parsed.runHappiness >= 0
+      ? parsed.runHappiness
+      : 0;
+  const savedAt = typeof parsed.savedAt === "number" ? parsed.savedAt : now;
+
   return {
     version: SAVE_VERSION,
     happiness:
@@ -88,11 +109,54 @@ function sanitize(parsed: Partial<GameState>, now: number): GameState {
     // New in v2 — default to 0 so older v1 saves load cleanly.
     roses:
       typeof parsed.roses === "number" && parsed.roses >= 0 ? parsed.roses : 0,
-    runHappiness:
-      typeof parsed.runHappiness === "number" && parsed.runHappiness >= 0
-        ? parsed.runHappiness
-        : 0,
+    runHappiness,
     roseItems,
-    savedAt: typeof parsed.savedAt === "number" ? parsed.savedAt : now,
+    // New in v3 — see sanitizeStats for the pre-v3 migration.
+    stats: sanitizeStats(parsed.stats, runHappiness, savedAt, now),
+    seenAchievements: Array.isArray(parsed.seenAchievements)
+      ? parsed.seenAchievements.filter((id): id is string => typeof id === "string")
+      : [],
+    savedAt,
+  };
+}
+
+/** Read one non-negative number from a partial save, else fall back. */
+function num(value: unknown, fallback: number): number {
+  return typeof value === "number" && isFinite(value) && value >= 0
+    ? value
+    : fallback;
+}
+
+/**
+ * Sanitize the lifetime stats block.
+ *
+ * Migration: a pre-v3 save has no `stats` at all. Rather than zeroing it (which
+ * would greet an hours-deep player as brand new), seed the lifetime totals from
+ * the run already in progress and date the save from its last write.
+ */
+function sanitizeStats(
+  parsed: Partial<GameStats> | undefined,
+  runHappiness: number,
+  savedAt: number,
+  now: number
+): GameStats {
+  const fresh = defaultStats(now);
+  if (!parsed || typeof parsed !== "object") {
+    return {
+      ...fresh,
+      lifetimeHappiness: runHappiness,
+      bestRunHappiness: runHappiness,
+      startedAt: savedAt,
+    };
+  }
+  return {
+    lifetimeHappiness: num(parsed.lifetimeHappiness, 0),
+    bestRunHappiness: num(parsed.bestRunHappiness, 0),
+    lifetimeRoses: num(parsed.lifetimeRoses, 0),
+    prestigeCount: Math.floor(num(parsed.prestigeCount, 0)),
+    totalPurchases: Math.floor(num(parsed.totalPurchases, 0)),
+    bestHps: num(parsed.bestHps, 0),
+    activePlayMs: num(parsed.activePlayMs, 0),
+    startedAt: num(parsed.startedAt, savedAt),
   };
 }

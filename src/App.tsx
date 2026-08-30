@@ -5,6 +5,8 @@ import BuyQuantitySelector from "./components/BuyQuantitySelector";
 import Shop from "./components/Shop";
 import PrestigePanel from "./components/PrestigePanel";
 import RoseShop from "./components/RoseShop";
+import StatsAchievements from "./components/StatsAchievements";
+import AchievementToast from "./components/AchievementToast";
 
 export default function App() {
   const offlineEarned = useGameStore((s) => s.offlineEarned);
@@ -50,6 +52,8 @@ export default function App() {
 
       <PrestigePanel />
       <RoseShop />
+      <StatsAchievements />
+      <AchievementToast />
 
       <footer className="app-footer">
         <button className="reset-btn" onClick={onReset}>

@@ -29,6 +29,30 @@ export interface ItemState {
   cycleStart: number;
 }
 
+// ---- Lifetime record of play (goes into the save) ----
+// Survives prestige like `roses`/`roseItems`; only a full Reset clears it.
+export interface GameStats {
+  /** Happiness earned across ALL runs, ever. */
+  lifetimeHappiness: number;
+  /** Highest happiness earned within a single run. */
+  bestRunHappiness: number;
+  /**
+   * Total roses ever EARNED. Tracked separately from `roses` because the rose
+   * shop spends that balance — it is not a record of what was earned.
+   */
+  lifetimeRoses: number;
+  /** Number of completed prestiges. */
+  prestigeCount: number;
+  /** Item copies purchased, all-time. */
+  totalPurchases: number;
+  /** Best happiness/sec ever reached. */
+  bestHps: number;
+  /** Tab-open play time in ms (offline time is deliberately excluded). */
+  activePlayMs: number;
+  /** Epoch ms when this save was first created. */
+  startedAt: number;
+}
+
 // ---- The whole saved game ----
 export interface GameState {
   /** Save format version, so we can migrate old saves later. */
@@ -53,6 +77,14 @@ export interface GameState {
    * Reset clears them (same lifecycle as `roses`).
    */
   roseItems: Record<string, number>;
+  /** Lifetime play record. Survives prestige; only a full Reset clears it. */
+  stats: GameStats;
+  /**
+   * Achievement ids already announced via toast. Earned status itself is
+   * DERIVED from state (see achievements.ts) and never stored — this list
+   * exists only so each achievement is announced exactly once.
+   */
+  seenAchievements: string[];
   /** Epoch ms of the last save — used to compute offline earnings on load. */
   savedAt: number;
 }

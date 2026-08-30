@@ -1,4 +1,4 @@
-import type { GameState } from "./types";
+import type { GameState, GameStats } from "./types";
 import { ITEMS, ITEM_BY_ID } from "./items";
 import { ROSE_ITEMS } from "./roseItems";
 import {
@@ -9,7 +9,7 @@ import {
   roseGainForRun,
 } from "./economy";
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 /** All rose-shop items at level 0 — the default/reset state. */
 export function defaultRoseItems(): Record<string, number> {
@@ -20,16 +20,32 @@ export function defaultRoseItems(): Record<string, number> {
   return levels;
 }
 
+/** A blank lifetime record — the default/reset state. */
+export function defaultStats(now: number = Date.now()): GameStats {
+  return {
+    lifetimeHappiness: 0,
+    bestRunHappiness: 0,
+    lifetimeRoses: 0,
+    prestigeCount: 0,
+    totalPurchases: 0,
+    bestHps: 0,
+    activePlayMs: 0,
+    startedAt: now,
+  };
+}
+
 /**
  * A brand-new run: 5 happiness, nothing owned, run earnings reset.
  * `roses` carries the permanent rose bank across a prestige (0 for a full reset).
  * `roseItems` carries rose-shop levels across a prestige (defaults to all-zero,
  * i.e. a full reset).
+ * `stats` carries the lifetime record across a prestige (same lifecycle).
  */
 export function createNewGame(
   now: number = Date.now(),
   roses: number = 0,
-  roseItems: Record<string, number> = defaultRoseItems()
+  roseItems: Record<string, number> = defaultRoseItems(),
+  stats: GameStats = defaultStats(now)
 ): GameState {
   const items: GameState["items"] = {};
   for (const item of ITEMS) {
@@ -42,6 +58,8 @@ export function createNewGame(
     roses,
     runHappiness: 0,
     roseItems,
+    stats,
+    seenAchievements: [],
     savedAt: now,
   };
 }
@@ -94,12 +112,20 @@ export function advanceGame(
 
   // Roses boost all earnings (+1% per rose), live and offline alike.
   const boosted = earned * happinessMultiplier(state.roses);
+  const runHappiness = state.runHappiness + boosted;
   return {
     state: {
       ...state,
       happiness: state.happiness + boosted,
-      runHappiness: state.runHappiness + boosted,
+      runHappiness,
       items,
+      // Lifetime totals accumulate here so BOTH live ticking and offline
+      // catch-up are covered by the one code path.
+      stats: {
+        ...state.stats,
+        lifetimeHappiness: state.stats.lifetimeHappiness + boosted,
+        bestRunHappiness: Math.max(state.stats.bestRunHappiness, runHappiness),
+      },
     },
     earned: boosted,
   };
@@ -114,7 +140,14 @@ export function applyPrestige(
   now: number = Date.now()
 ): GameState {
   const gained = roseGainForRun(state.runHappiness, state.roseItems);
-  return createNewGame(now, state.roses + gained, state.roseItems);
+  const next = createNewGame(now, state.roses + gained, state.roseItems, {
+    ...state.stats,
+    prestigeCount: state.stats.prestigeCount + 1,
+    lifetimeRoses: state.stats.lifetimeRoses + gained,
+  });
+  // Keep already-announced achievements so re-earning them after a reset run
+  // doesn't re-toast.
+  return { ...next, seenAchievements: state.seenAchievements };
 }
 
 /**
