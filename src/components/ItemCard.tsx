@@ -5,7 +5,8 @@ import {
   formatNumber,
   speedTier,
   happinessMultiplier,
-  discountedCost,
+  costForQuantity,
+  maxAffordable,
   boostedCycleSeconds,
   boostedHappinessPerSecond,
   HALVE_EVERY,
@@ -30,11 +31,27 @@ export default function ItemCard({ config }: ItemCardProps) {
   const now = useGameStore((s) => s.now);
   const game = useGameStore((s) => s.game);
   const buy = useGameStore((s) => s.buy);
+  const buyQuantity = useGameStore((s) => s.buyQuantity);
 
   const owned = itemState.owned;
-  // Pet Penguin (rose shop) discounts main-game item costs.
-  const cost = discountedCost(config, owned, game.roseItems);
-  const canAfford = happiness >= cost;
+
+  // Cost/affordability/label depend on the selected buy quantity (1/10/25/Max).
+  // Pet Penguin (rose shop) discount is applied inside costForQuantity/maxAffordable.
+  let cost: number;
+  let canAfford: boolean;
+  let buyLabel: string;
+  if (buyQuantity === "max") {
+    const result = maxAffordable(config, owned, happiness, game.roseItems);
+    canAfford = result.quantity > 0;
+    cost = canAfford
+      ? result.totalCost
+      : costForQuantity(config, owned, 1, game.roseItems);
+    buyLabel = canAfford ? `Buy Max ×${result.quantity}` : "Buy Max";
+  } else {
+    cost = costForQuantity(config, owned, buyQuantity, game.roseItems);
+    canAfford = happiness >= cost;
+    buyLabel = `Buy ${buyQuantity}`;
+  }
   const isLocked = owned === 0;
 
   const progress = cycleProgress(game, config.id, now);
@@ -94,7 +111,7 @@ export default function ItemCard({ config }: ItemCardProps) {
         onClick={() => buy(config.id)}
         disabled={!canAfford}
       >
-        <span className="buy-label">{owned === 0 ? "Buy" : "Buy 1"}</span>
+        <span className="buy-label">{buyLabel}</span>
         <span className="buy-cost">{formatNumber(cost)} 💗</span>
       </button>
     </div>

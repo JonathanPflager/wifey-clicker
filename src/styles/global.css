@@ -148,6 +148,50 @@ body {
   white-space: nowrap;
 }
 
+/* ---- Buy quantity selector ---- */
+.qty-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.qty-selector-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.qty-selector-options {
+  display: flex;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.qty-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.qty-btn:hover {
+  color: var(--text);
+}
+
+.qty-btn-active {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #3a1226;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
 /* ---- Shop / cards ---- */
 .shop {
   display: flex;

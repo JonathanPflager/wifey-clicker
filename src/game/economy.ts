@@ -125,6 +125,44 @@ export function discountedCost(
   return Math.max(1, Math.round(nextCost(config, owned) * costMultiplier(levels)));
 }
 
+/** Total cost to buy `quantity` more copies of an item, starting from `owned`. */
+export function costForQuantity(
+  config: ItemConfig,
+  owned: number,
+  quantity: number,
+  levels: RoseItemLevels
+): number {
+  let total = 0;
+  for (let i = 0; i < quantity; i++) {
+    total += discountedCost(config, owned + i, levels);
+  }
+  return total;
+}
+
+/**
+ * Greatest quantity of an item affordable right now (starting from `owned`),
+ * plus its total cost — used for the "Max" buy mode.
+ */
+export function maxAffordable(
+  config: ItemConfig,
+  owned: number,
+  happiness: number,
+  levels: RoseItemLevels
+): { quantity: number; totalCost: number } {
+  let quantity = 0;
+  let totalCost = 0;
+  // Cost grows exponentially with owned, so this terminates quickly in
+  // practice; the cap is just a safety net against pathological inputs.
+  const SAFETY_CAP = 100_000;
+  while (quantity < SAFETY_CAP) {
+    const next = discountedCost(config, owned + quantity, levels);
+    if (totalCost + next > happiness) break;
+    totalCost += next;
+    quantity++;
+  }
+  return { quantity, totalCost };
+}
+
 /** Main-game item cycle length after the Golden Kindle speed boost. */
 export function boostedCycleSeconds(
   config: ItemConfig,

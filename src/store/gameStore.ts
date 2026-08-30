@@ -1,9 +1,17 @@
 import { create } from "zustand";
 import type { GameState } from "../game/types";
 import { ITEM_BY_ID } from "../game/items";
-import { discountedCost, roseGainForRun, roseItemCost } from "../game/economy";
+import {
+  costForQuantity,
+  maxAffordable,
+  roseGainForRun,
+  roseItemCost,
+} from "../game/economy";
 import { advanceGame, applyPrestige, createNewGame } from "../game/engine";
 import { loadGame, saveGame, clearSave } from "../game/save";
+
+/** How many copies a "Buy" click purchases; "max" buys as many as affordable. */
+export type BuyQuantity = 1 | 10 | 25 | "max";
 
 interface GameStore {
   game: GameState;
@@ -11,10 +19,14 @@ interface GameStore {
   offlineEarned: number;
   /** Bumps every tick so components relying on live time re-render. */
   now: number;
+  /** Selected buy quantity mode for the main shop — applies to every item. */
+  buyQuantity: BuyQuantity;
 
   /** Advance cycles/payouts to the current time (called by the loop). */
   tick: () => void;
-  /** Buy one copy of an item if affordable; starts its cycle on first buy. */
+  /** Change the buy quantity mode (1 / 10 / 25 / max). */
+  setBuyQuantity: (quantity: BuyQuantity) => void;
+  /** Buy `buyQuantity` copies of an item if affordable; starts its cycle on first buy. */
   buy: (id: string) => void;
   /** Dismiss the "while you were away" banner. */
   clearOfflineEarned: () => void;
@@ -32,6 +44,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   game: initial.state,
   offlineEarned: initial.offlineEarned,
   now: Date.now(),
+  buyQuantity: 1,
 
   tick: () => {
     const now = Date.now();
@@ -39,13 +52,27 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ game: state, now });
   },
 
+  setBuyQuantity: (quantity) => set({ buyQuantity: quantity }),
+
   buy: (id: string) => {
     const config = ITEM_BY_ID[id];
     if (!config) return;
     const game = get().game;
     const itemState = game.items[id];
-    const cost = discountedCost(config, itemState.owned, game.roseItems);
-    if (game.happiness < cost) return; // can't afford
+    const quantity = get().buyQuantity;
+
+    let boughtQty: number;
+    let cost: number;
+    if (quantity === "max") {
+      const result = maxAffordable(config, itemState.owned, game.happiness, game.roseItems);
+      if (result.quantity < 1) return; // can't afford even one more
+      boughtQty = result.quantity;
+      cost = result.totalCost;
+    } else {
+      cost = costForQuantity(config, itemState.owned, quantity, game.roseItems);
+      if (game.happiness < cost) return; // can't afford all of them
+      boughtQty = quantity;
+    }
 
     const now = Date.now();
     // First copy starts the auto-running cycle; later copies keep the timer.
@@ -58,7 +85,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         happiness: game.happiness - cost,
         items: {
           ...game.items,
-          [id]: { owned: itemState.owned + 1, cycleStart },
+          [id]: { owned: itemState.owned + boughtQty, cycleStart },
         },
       },
     });
