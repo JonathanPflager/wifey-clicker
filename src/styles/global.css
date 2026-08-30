@@ -152,8 +152,9 @@ body {
 .qty-selector {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-top: 10px;
 }
 
 .qty-selector-label {

@@ -1,6 +1,7 @@
 import { useGameStore } from "./store/gameStore";
 import { formatNumber } from "./game/economy";
 import CurrencyDisplay from "./components/CurrencyDisplay";
+import BuyQuantitySelector from "./components/BuyQuantitySelector";
 import Shop from "./components/Shop";
 import PrestigePanel from "./components/PrestigePanel";
 import RoseShop from "./components/RoseShop";
@@ -28,6 +29,7 @@ export default function App() {
 
       <div className="currency-bar">
         <CurrencyDisplay />
+        <BuyQuantitySelector />
       </div>
 
       {offlineEarned > 0 && (
