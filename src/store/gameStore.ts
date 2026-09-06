@@ -6,6 +6,7 @@ import {
   maxAffordable,
   roseGainForRun,
   roseItemCost,
+  BONUS_TAP_MS,
 } from "../game/economy";
 import {
   advanceGame,
@@ -42,6 +43,8 @@ interface GameStore {
   prestige: () => void;
   /** Unlock or upgrade a rose-shop item if affordable. */
   buyRoseItem: (id: string) => void;
+  /** Add BONUS_TAP_MS of 2x earnings; taps stack onto any time remaining. */
+  tapBonus: () => void;
   /** Dismiss the oldest pending achievement toast. */
   dismissAchievement: (id: string) => void;
   /** Wipe progress and start over. */
@@ -190,6 +193,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
     set({ game: next });
     saveGame(next, now); // persist immediately, same as prestige
+  },
+
+  tapBonus: () => {
+    const now = Date.now();
+    const game = get().game;
+    // Extend from whichever is later so taps during an active bonus stack
+    // rather than restarting a shorter window.
+    const from = Math.max(now, game.bonusUntil);
+    set({ game: { ...game, bonusUntil: from + BONUS_TAP_MS } });
   },
 
   dismissAchievement: (id: string) =>

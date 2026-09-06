@@ -190,6 +190,23 @@ export function roseGainForRun(runHappiness: number, levels: RoseItemLevels): nu
   );
 }
 
+// ---- Tap bonus (the bar at the bottom of the screen) ----
+
+/** Payout multiplier while the tap bonus is active. */
+export const BONUS_MULTIPLIER = 2;
+/** How much bonus time a single tap adds. Taps stack. */
+export const BONUS_TAP_MS = 2000;
+
+/** BONUS_MULTIPLIER while the tap bonus is running, else 1. */
+export function bonusMultiplier(bonusUntil: number, now: number): number {
+  return now < bonusUntil ? BONUS_MULTIPLIER : 1;
+}
+
+/** Milliseconds left on the tap bonus (0 when inactive). */
+export function bonusRemainingMs(bonusUntil: number, now: number): number {
+  return Math.max(0, bonusUntil - now);
+}
+
 /** Formats a duration in ms as a compact "2d 3h", "3h 24m", "12m", "45s". */
 export function formatDuration(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));

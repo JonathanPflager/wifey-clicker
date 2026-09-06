@@ -7,9 +7,14 @@ import PrestigePanel from "./components/PrestigePanel";
 import RoseShop from "./components/RoseShop";
 import StatsAchievements from "./components/StatsAchievements";
 import AchievementToast from "./components/AchievementToast";
+import BonusBar from "./components/BonusBar";
+import HeartRain from "./components/HeartRain";
 
 export default function App() {
   const offlineEarned = useGameStore((s) => s.offlineEarned);
+  const bonusUntil = useGameStore((s) => s.game.bonusUntil);
+  const now = useGameStore((s) => s.now);
+  const bonusActive = now < bonusUntil;
   const clearOfflineEarned = useGameStore((s) => s.clearOfflineEarned);
   const reset = useGameStore((s) => s.reset);
 
@@ -54,6 +59,8 @@ export default function App() {
       <RoseShop />
       <StatsAchievements />
       <AchievementToast />
+      {bonusActive && <HeartRain />}
+      <BonusBar />
 
       <footer className="app-footer">
         <button className="reset-btn" onClick={onReset}>

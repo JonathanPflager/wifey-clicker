@@ -113,6 +113,7 @@ function sanitize(parsed: Partial<GameState>, now: number): GameState {
     roseItems,
     // New in v3 — see sanitizeStats for the pre-v3 migration.
     stats: sanitizeStats(parsed.stats, runHappiness, savedAt, now),
+    bonusUntil: num(parsed.bonusUntil, 0),
     seenAchievements: Array.isArray(parsed.seenAchievements)
       ? parsed.seenAchievements.filter((id): id is string => typeof id === "string")
       : [],

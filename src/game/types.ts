@@ -85,6 +85,11 @@ export interface GameState {
    * exists only so each achievement is announced exactly once.
    */
   seenAchievements: string[];
+  /**
+   * Epoch ms when the tap bonus expires. Each tap adds BONUS_TAP_MS; while
+   * `now < bonusUntil` every payout is multiplied by BONUS_MULTIPLIER.
+   */
+  bonusUntil: number;
   /** Epoch ms of the last save — used to compute offline earnings on load. */
   savedAt: number;
 }

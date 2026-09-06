@@ -5,6 +5,7 @@ import {
   formatNumber,
   speedTier,
   happinessMultiplier,
+  bonusMultiplier,
   costForQuantity,
   maxAffordable,
   boostedCycleSeconds,
@@ -55,8 +56,10 @@ export default function ItemCard({ config }: ItemCardProps) {
   const isLocked = owned === 0;
 
   const progress = cycleProgress(game, config.id, now);
-  // Rose bonus (+1% per rose held) boosts the displayed payout so cards match earnings.
-  const mult = happinessMultiplier(game.roses);
+  // Rose bonus (+1% per rose held) and the tap bonus both boost the displayed
+  // payout, so cards always match what is actually being earned.
+  const mult =
+    happinessMultiplier(game.roses) * bonusMultiplier(game.bonusUntil, now);
   const payout = cyclePayout(config, owned) * mult;
 
   // Speed milestones (every HALVE_EVERY copies) plus the Golden Kindle rose-shop boost.

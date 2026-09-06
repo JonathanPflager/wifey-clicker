@@ -4,12 +4,13 @@ import { ROSE_ITEMS } from "./roseItems";
 import {
   cyclePayout,
   happinessMultiplier,
+  bonusMultiplier,
   boostedCycleSeconds,
   boostedHappinessPerSecond,
   roseGainForRun,
 } from "./economy";
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /** All rose-shop items at level 0 — the default/reset state. */
 export function defaultRoseItems(): Record<string, number> {
@@ -60,6 +61,7 @@ export function createNewGame(
     roseItems,
     stats,
     seenAchievements: [],
+    bonusUntil: 0,
     savedAt: now,
   };
 }
@@ -110,8 +112,11 @@ export function advanceGame(
     };
   }
 
-  // Roses boost all earnings (+1% per rose), live and offline alike.
-  const boosted = earned * happinessMultiplier(state.roses);
+  // Roses boost all earnings (+1% per rose), live and offline alike. The tap
+  // bonus stacks on top; ticks are 100ms so sampling it at `now` is accurate
+  // to well within one bonus second.
+  const boosted =
+    earned * happinessMultiplier(state.roses) * bonusMultiplier(state.bonusUntil, now);
   const runHappiness = state.runHappiness + boosted;
   return {
     state: {
@@ -146,8 +151,12 @@ export function applyPrestige(
     lifetimeRoses: state.stats.lifetimeRoses + gained,
   });
   // Keep already-announced achievements so re-earning them after a reset run
-  // doesn't re-toast.
-  return { ...next, seenAchievements: state.seenAchievements };
+  // doesn't re-toast, and don't swallow a tap bonus the player just built up.
+  return {
+    ...next,
+    seenAchievements: state.seenAchievements,
+    bonusUntil: state.bonusUntil,
+  };
 }
 
 /**
