@@ -86,7 +86,8 @@ export interface GameState {
    */
   seenAchievements: string[];
   /**
-   * Epoch ms when the tap bonus expires. Each tap adds BONUS_TAP_MS; while
+   * Epoch ms when the tap bonus expires. Each tap adds BONUS_TAP_MS (capped at
+   * BONUS_MAX_MS of banked time); while
    * `now < bonusUntil` every payout is multiplied by BONUS_MULTIPLIER.
    */
   bonusUntil: number;

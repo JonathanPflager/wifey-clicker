@@ -7,6 +7,7 @@ import {
   roseGainForRun,
   roseItemCost,
   BONUS_TAP_MS,
+  BONUS_MAX_MS,
 } from "../game/economy";
 import {
   advanceGame,
@@ -199,9 +200,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const now = Date.now();
     const game = get().game;
     // Extend from whichever is later so taps during an active bonus stack
-    // rather than restarting a shorter window.
+    // rather than restarting a shorter window, then clamp so banked time never
+    // exceeds BONUS_MAX_MS from right now.
     const from = Math.max(now, game.bonusUntil);
-    set({ game: { ...game, bonusUntil: from + BONUS_TAP_MS } });
+    const bonusUntil = Math.min(from + BONUS_TAP_MS, now + BONUS_MAX_MS);
+    set({ game: { ...game, bonusUntil } });
   },
 
   dismissAchievement: (id: string) =>

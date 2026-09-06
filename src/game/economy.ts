@@ -194,8 +194,10 @@ export function roseGainForRun(runHappiness: number, levels: RoseItemLevels): nu
 
 /** Payout multiplier while the tap bonus is active. */
 export const BONUS_MULTIPLIER = 2;
-/** How much bonus time a single tap adds. Taps stack. */
-export const BONUS_TAP_MS = 2000;
+/** How much bonus time a single tap adds. Taps stack, up to BONUS_MAX_MS. */
+export const BONUS_TAP_MS = 500;
+/** Ceiling on banked bonus time — taps past this don't extend it further. */
+export const BONUS_MAX_MS = 60_000;
 
 /** BONUS_MULTIPLIER while the tap bonus is running, else 1. */
 export function bonusMultiplier(bonusUntil: number, now: number): number {
